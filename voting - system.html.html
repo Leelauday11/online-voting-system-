@@ -1,406 +1,1139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>🗳️ Smart Voting - INSTANT SMS OTP</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>Online Voting  – Email/Aadhar/Mobile OTP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root {
-      --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
-      --card: rgba(255,255,255,0.95); --shadow: 0 20px 40px rgba(0,0,0,0.1);
+      --bg: #0b1120;
+      --card: #020617;
+      --accent: #2563eb;
+      --accent-soft: rgba(37, 99, 235, 0.15);
+      --accent-strong: rgba(37, 99, 235, 0.35);
+      --border: #1e293b;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --radius: 10px;
+      --shadow: 0 20px 45px rgba(15, 23, 42, 0.85);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--primary); min-height: 100vh; color: #333;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1d283a 0, #020617 45%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
     }
-    .header {
-      background: rgba(255,255,255,0.98); backdrop-filter: blur(20px);
-      padding: 1rem 2rem; box-shadow: var(--shadow);
-      display: flex; justify-content: space-between; align-items: center;
+
+    /* Layout */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
-    .logo { font-size: 1.8rem; font-weight: 800; background: var(--primary); 
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .nav-tabs { display: flex; gap: 1rem; }
-    .tab { 
-      padding: 12px 24px; border-radius: 25px; border: none; background: rgba(102,126,234,0.2);
-      color: white; cursor: pointer; font-weight: 600; transition: all 0.3s;
+    header .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #e5e7eb;
     }
-    .tab.active { background: var(--primary); transform: translateY(-2px); }
-    .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+    header .logo span:nth-child(1) {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 20%, #38bdf8, #4f46e5);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+    nav button.link {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 999px;
+      transition: all 0.18s ease;
+    }
+    nav button.link:hover {
+      background: rgba(30, 64, 175, 0.3);
+      color: #e5e7eb;
+    }
+    nav button.link.active {
+      background: var(--accent);
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.6);
+    }
+    #navRight button.link {
+      border-radius: 999px;
+      padding-inline: 14px;
+      border: 1px solid var(--border);
+    }
+    #navRight span {
+      margin-right: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 24px auto 40px;
+      padding: 0 14px 30px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
     .card {
-      background: var(--card); border-radius: 24px; padding: 2.5rem;
-      box-shadow: var(--shadow); margin-bottom: 1rem;
+      background: radial-gradient(circle at top left, #0f172a, #020617 55%);
+      border-radius: 18px;
+      border: 1px solid rgba(30, 64, 175, 0.6);
+      box-shadow: var(--shadow);
+      padding: 20px 20px 22px;
+      position: relative;
+      overflow: hidden;
     }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-    @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
-    .field { margin-bottom: 1.5rem; }
-    .field label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #555; }
-    .field input {
-      width: 100%; padding: 16px; border: 2px solid #e5e7eb; border-radius: 12px;
-      font-size: 16px; transition: all 0.3s; background: white;
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -80px;
+      background:
+        radial-gradient(circle at -10% 0, rgba(59, 130, 246, 0.18), transparent 55%),
+        radial-gradient(circle at 110% 10%, rgba(185, 28, 28, 0.18), transparent 55%);
+      opacity: 0.4;
+      pointer-events: none;
     }
-    .field input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
-    .otp-section {
-      background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 1.5rem; 
-      border-radius: 16px; border: 2px solid #0ea5e9; margin: 1rem 0;
+    .card-inner {
+      position: relative;
+      z-index: 1;
     }
-    .otp-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-    .otp-row > * { flex: 1; min-width: 150px; }
+
+    h1 {
+      font-size: clamp(24px, 3vw, 30px);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h1 span.badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(52, 211, 153, 0.7);
+      color: #a7f3d0;
+      background: rgba(6, 95, 70, 0.3);
+      letter-spacing: 0.1em;
+    }
+
+    p.lead {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 540px;
+    }
+
+    .chips {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .chip {
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(30, 64, 175, 0.7);
+      color: #c7d2fe;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
     .btn {
-      background: var(--primary); color: white; border: none; padding: 16px 24px;
-      border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
-      transition: all 0.3s; box-shadow: 0 8px 25px rgba(102,126,234,0.3);
+      border-radius: 999px;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      padding: 9px 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease;
     }
-    .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(102,126,234,0.4); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-success { background: linear-gradient(135deg, var(--success), #059669); }
-    .alert {
-      padding: 1rem 1.5rem; border-radius: 12px; margin: 1rem 0; font-weight: 500;
+    .btn.primary {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb, #4f46e5);
+      color: white;
+      box-shadow: 0 12px 35px rgba(37, 99, 235, 0.55);
     }
-    .alert-success { background: rgba(16,185,129,0.15); border: 1px solid var(--success); color: var(--success); }
-    .alert-error { background: rgba(239,68,68,0.15); border: 1px solid var(--danger); color: var(--danger); }
-    .alert-info { 
-      background: linear-gradient(135deg, #dbeafe, #bfdbfe); 
-      border: 2px solid #3b82f6; color: #1e40af; font-weight: 700;
+    .btn.primary:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
     }
-    .otp-display {
-      background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px;
-      padding: 1rem; margin: 0.5rem 0; font-family: monospace; font-size: 18px;
-      text-align: center; color: #92400e;
+    .btn.outline {
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.8);
     }
-    .dashboard-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; }
-    @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
+    .btn.outline:hover {
+      border-color: rgba(148, 163, 184, 0.9);
+      color: #e5e7eb;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .pill-row span {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px dashed rgba(55, 65, 81, 0.9);
+    }
+
+    /* Right column info */
+    .info-box {
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 18px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      padding: 16px 16px 14px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.9);
+      font-size: 13px;
+    }
+    .info-box h2 {
+      font-size: 15px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .info-box p {
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .stat-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .stat {
+      flex: 1 1 90px;
+      padding: 8px 9px;
+      border-radius: 12px;
+      background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.30), rgba(15, 23, 42, 0.98));
+      border: 1px solid rgba(37, 99, 235, 0.5);
+      color: #e5e7eb;
+      min-width: 0;
+    }
+    .stat label {
+      display: block;
+      font-size: 11px;
+      color: #c4b5fd;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .stat span {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    /* Views */
+    .view {
+      display: none;
+      margin-top: 20px;
+    }
+    .view.active {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      .view.active {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .panel {
+      background: rgba(15, 23, 42, 0.94);
+      border-radius: 14px;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      padding: 16px 16px 18px;
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.9);
+    }
+    .panel h2 {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .panel p.sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    form .field {
+      margin-bottom: 10px;
+    }
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .field input {
+      width: 100%;
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: rgba(15, 23, 42, 0.98);
+      color: var(--text);
+      font-size: 13px;
+    }
+    .field input:focus {
+      outline: none;
+      border-color: rgba(37, 99, 235, 0.8);
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.6);
+    }
+
+    .error {
+      font-size: 12px;
+      color: #fecaca;
+      background: rgba(127, 29, 29, 0.4);
+      border: 1px solid rgba(248, 113, 113, 0.5);
+      padding: 6px 8px;
+      border-radius: 8px;
+      margin-top: 4px;
+    }
+    .info {
+      font-size: 12px;
+      color: #bfdbfe;
+      background: rgba(30, 64, 175, 0.35);
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      padding: 6px 8px;
+      border-radius: 8px;
+      margin-top: 4px;
+    }
+    .success {
+      font-size: 13px;
+      color: #bbf7d0;
+      background: rgba(5, 46, 22, 0.6);
+      border: 1px solid rgba(34, 197, 94, 0.8);
+      padding: 6px 8px;
+      border-radius: 8px;
+      margin-top: 6px;
+    }
+    .hidden { display: none; }
+
+    .otp-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .otp-row input {
+      flex: 1 1 120px;
+    }
+    .otp-row button {
+      flex: 0 0 auto;
+      font-size: 12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(59, 130, 246, 0.7);
+      background: rgba(15, 23, 42, 0.95);
+      color: #dbeafe;
+      cursor: pointer;
+    }
+    .otp-row button:hover {
+      background: rgba(37, 99, 235, 0.35);
+    }
+
+    /* Dashboard & candidates */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.8fr);
+      gap: 14px;
+    }
+    @media (max-width: 800px) {
+      .profile-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .profile-card {
+      background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.20), rgba(15, 23, 42, 0.98));
+      border-radius: 14px;
+      border: 1px solid rgba(37, 99, 235, 0.7);
+      padding: 12px 13px;
+      font-size: 13px;
+    }
+    .profile-card h3 {
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+    .profile-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+    .profile-row span.label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .candidate-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin-top: 4px;
+    }
     .candidate {
-      background: white; border: 3px solid transparent; border-radius: 20px;
-      padding: 2rem; text-align: center; cursor: pointer; transition: all 0.4s;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      background: rgba(15, 23, 42, 0.98);
+      border-radius: 12px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      padding: 10px 11px;
+      font-size: 13px;
     }
-    .candidate:hover:not(.voted) { border-color: var(--primary); transform: translateY(-8px); }
-    .candidate.voted { border-color: var(--success); opacity: 0.7; cursor: default; }
-    .candidate-icon { font-size: 3.5rem; margin: 1rem 0; }
+    .candidate header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0;
+      background: none;
+      position: static;
+      border-bottom: none;
+    }
+    .candidate header h3 {
+      font-size: 14px;
+    }
+    .candidate-symbol {
+      font-size: 20px;
+    }
+    .candidate p {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 3px 0 6px;
+    }
+    .candidate button {
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      border: 1px solid rgba(37, 99, 235, 0.8);
+      background: rgba(15, 23, 42, 0.96);
+      color: #dbeafe;
+      cursor: pointer;
+    }
+    .candidate button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="logo">🗳️ Smart Voting System</div>
-    <div class="nav-tabs">
-      <button class="tab active" data-tab="home">🏠 Home</button>
-      <button class="tab" data-tab="register">📱 Register</button>
-      <button class="tab" data-tab="login">🔐 Login</button>
-      <button class="tab" data-tab="dashboard">📊 Dashboard</button>
+  <header>
+    <div class="logo">
+      <span>🗳</span>
+      <span>Secure Voting Demo</span>
     </div>
-  </div>
+    <nav>
+      <button id="navHome" class="link active">Home</button>
+      <button id="navInfo" class="link">Info</button>
+    </nav>
+    <nav id="navRight"></nav>
+  </header>
 
-  <div class="container">
-    <!-- HOME -->
-    <div id="home" class="card tab-content active">
-      <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">🗳️ Online Smart Voting</h1>
-      <p style="font-size: 1.2rem; color: #666; margin-bottom: 2rem;">
-        Instant SMS OTP + Registration + Voting ✅ NO TWILIO NEEDED
-      </p>
-      
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-        <div class="otp-section">
-          <h3>⚡ Quick Test (8074392095)</h3>
-          <div class="otp-row">
-            <input id="quickMobile" type="tel" maxlength="10" value="8074392095">
-            <button id="quickSend" class="btn btn-warning">📱 Generate OTP</button>
-          </div>
-          <div id="quickMsg"></div>
-          <div id="quickOtp" class="otp-display hidden"></div>
-        </div>
-        <div style="background: rgba(16,185,129,0.1); padding: 2rem; border-radius: 20px; border: 2px solid var(--success);">
-          <h3>✅ Test Account</h3>
-          <div style="font-size: 1.1rem;">
-            <strong>Email:</strong> rajesh@example.com<br>
-            <strong>Password:</strong> password
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- REGISTER -->
-    <div id="register" class="card tab-content">
-      <h1 style="font-size: 2.2rem;">📱 Voter Registration</h1>
-      <form id="registerForm">
-        <div class="form-grid">
-          <div>
-            <div class="field">
-              <label>Full Name *</label>
-              <input id="regName" type="text" placeholder="Leela Uday Kumar" required>
-            </div>
-            <div class="field">
-              <label>Email *</label>
-              <input id="regEmail" type="email" placeholder="mummadi@example.com" required>
-            </div>
-            <div class="field">
-              <label>Password *</label>
-              <input id="regPassword" type="password" placeholder="yourpassword" required>
-            </div>
-          </div>
-          <div>
-            <div class="field">
-              <label>Aadhar Number</label>
-              <input id="regAadhar" type="tel" maxlength="14" placeholder="1234 1234 1234">
-            </div>
-            <div class="otp-section">
-              <h4>📱 Mobile Verification <span style="color: var(--success); font-weight: bold;">(Instant OTP)</span></h4>
-              <input id="regMobile" type="tel" maxlength="10" placeholder="8074392095" value="8074392095" required>
-              <div class="otp-row">
-                <button id="sendOtpBtn" type="button" class="btn">📤 Send OTP</button>
-                <input id="otpInput" type="text" maxlength="6" placeholder="Enter 6-digit OTP">
-                <button id="verifyOtpBtn" type="button" class="btn btn-success" disabled>✅ Verify</button>
-              </div>
-              <div id="otpDisplay" class="otp-display hidden"></div>
-            </div>
-          </div>
-        </div>
-        <button type="submit" id="submitBtn" class="btn" disabled style="width: 100%; padding: 20px; font-size: 18px; margin-top: 1rem;">
-          🎉 Complete Registration & Vote
-        </button>
-        <div id="regMsg" class="alert-error hidden"></div>
-      </form>
-    </div>
-
-    <!-- LOGIN -->
-    <div id="login" class="card tab-content">
-      <h1 style="font-size: 2.2rem; text-align: center;">🔐 Quick Login</h1>
-      <form id="loginForm" style="max-width: 400px; margin: 2rem auto;">
-        <div class="field">
-          <label>Email</label>
-          <input id="loginEmail" type="email" value="rajesh@example.com">
-        </div>
-        <div class="field">
-          <label>Password</label>
-          <input id="loginPassword" type="password" value="password">
-        </div>
-        <button type="submit" class="btn" style="width: 100%; padding: 20px;">🚀 Go to Dashboard</button>
-        <div id="loginMsg" class="alert-error hidden"></div>
-      </form>
-    </div>
-
-    <!-- DASHBOARD -->
-    <div id="dashboard" class="card tab-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h1 style="font-size: 2.5rem;">📊 Voter Dashboard</h1>
-        <button id="logoutBtn" class="btn btn-secondary">🚪 Logout</button>
-      </div>
-      <div class="dashboard-grid">
+  <main>
+    <!-- HOME VIEW -->
+    <section id="homeView" class="card">
+      <div class="card-inner grid">
         <div>
-          <h2>👤 Your Profile</h2>
-          <div style="background: rgba(102,126,234,0.1); padding: 2rem; border-radius: 20px; border: 2px solid rgba(102,126,234,0.3);">
-            <div style="display: grid; grid-template-columns: 100px 1fr; gap: 1rem; margin-bottom: 1rem;">
-              <span style="font-weight: 600; color: #555;">Name:</span> <span id="dashName">-</span>
-            </div>
-            <div style="display: grid; grid-template-columns: 100px 1fr; gap: 1rem; margin-bottom: 1rem;">
-              <span style="font-weight: 600; color: #555;">Email:</span> <span id="dashEmail">-</span>
-            </div>
-            <div style="display: grid; grid-template-columns: 100px 1fr; gap: 1rem; margin-bottom: 1rem;">
-              <span style="font-weight: 600; color: #555;">Mobile:</span> <span id="dashMobile">-</span>
-            </div>
-            <div style="display: grid; grid-template-columns: 100px 1fr; gap: 1rem;">
-              <span style="font-weight: 600; color: #555;">Status:</span> 
-              <span id="dashStatus" style="color: var(--success); font-weight: 700; font-size: 1.2rem;">Ready to Vote</span>
-            </div>
+          <h1>
+            Online Voting system
+            <span class="badge"></span>
+          </h1>
+          <p class="lead">
+            Use Login/Registration with Mobile OTP verification or Aadhar OTP to access the dashboard and cast a secure demo vote.
+          </p>
+          <div class="chips">
+            <span class="chip">🔐 Email + Password</span>
+            <span class="chip">📱 Mobile OTP (simulated)</span>
+            <span class="chip">🪪 Aadhar OTP (simulated)</span>
+            <span class="chip">🗳 One vote per user</span>
+          </div>
+          <div class="cta-row">
+            <button id="goLogin" class="btn primary">Login</button>
+            <button id="goRegister" class="btn outline">Register with Mobile OTP</button>
+            <button id="goAadharVerify" class="btn outline">Aadhar OTP Login</button>
+          </div>
+          <div class="pill-row">
+            <span>Front-end only</span>
+            <span>OTP values are shown on screen for testing</span>
           </div>
         </div>
-        <div>
-          <h2>Vote for Candidate</h2>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-            <div class="candidate" data-candidate="1">
-              <div class="candidate-icon">⭐</div>
-              <h3>Ramesh Rao</h3>
-              <p style="color: #666; margin: 0.5rem 0 1rem;">Progress Alliance</p>
-              <button class="btn vote-btn" style="width: 100%;">Vote Now</button>
+
+        <div class="info-box">
+          <h2>How this demo works</h2>
+          <p>
+            Everything runs in the browser: users, OTPs, and votes live only in memory. Use it to learn the flow before connecting to a real backend and SMS gateway.
+          </p>
+          <div class="stat-row">
+            <div class="stat">
+              <label>Users in memory</label>
+              <span id="statUsers">2 </span>
             </div>
-            <div class="candidate" data-candidate="2">
-              <div class="candidate-icon">🤝</div>
-              <h3>Meera Chopra</h3>
-              <p style="color: #666; margin: 0.5rem 0 1rem;">Unity Front</p>
-              <button class="btn vote-btn" style="width: 100%;">Vote Now</button>
+            <div class="stat">
+              <label>Candidates</label>
+              <span id="statCandidates">5</span>
             </div>
-            <div class="candidate" data-candidate="3">
-              <div class="candidate-icon">🚀</div>
-              <h3>Sanjay Gupta</h3>
-              <p style="color: #666; margin: 0.5rem 0 1rem;">Future Vision</p>
-              <button class="btn vote-btn" style="width: 100%;">Vote Now</button>
+            <div class="stat">
+              <label>Mobile OTP</label>
+              <span>On-page</span>
             </div>
           </div>
-          <div id="voteMsg" class="alert alert-success hidden" style="margin-top: 2rem;"></div>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
+
+    <!-- LOGIN / REGISTER / AADHAR / DASHBOARD / INFO VIEWS -->
+    <section id="loginView" class="view">
+      <div class="panel">
+        <h2>Login</h2>
+        <p class="sub">Use your registered email and password.</p>
+        <form onsubmit="return false;">
+          <div class="field">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" placeholder="you@example.com" />
+          </div>
+          <div class="field">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" type="password" placeholder="••••••••" />
+          </div>
+          <button id="loginBtn" class="btn primary" style="margin-top:6px;">Login</button>
+          <div id="loginError" class="error hidden"></div>
+        </form>
+        <p class="sub" style="margin-top:10px;">
+          New user? <button id="loginToRegister" class="link" style="padding:0;">Register with Mobile OTP</button>
+        </p>
+      </div>
+
+      <div class="panel">
+        <h2>Seeded test account</h2>
+        <p class="sub">
+          For quick testing, a demo user is pre-loaded in memory.
+        </p>
+        <div class="info">
+          Email: <strong>rajesh@example.com</strong><br />
+          Password: <strong>password</strong><br />
+          Aadhar: <strong>1234 1234 1234</strong><br />
+          Mobile: <strong>9876543210</strong>
+        </div>
+      </div>
+    </section>
+
+    <section id="registerView" class="view">
+      <div class="panel">
+        <h2>Register new voter</h2>
+        <p class="sub">
+          Register with email, Aadhar and mobile. Mobile number must be verified via OTP on this page before account creation.
+        </p>
+        <form onsubmit="return false;">
+          <div class="field">
+            <label for="regName">Full name</label>
+            <input id="regName" type="text" placeholder="Your full name" />
+          </div>
+          <div class="field">
+            <label for="regEmail">Email</label>
+            <input id="regEmail" type="email" placeholder="you@example.com" />
+          </div>
+          <div class="field">
+            <label for="regPassword">Password</label>
+            <input id="regPassword" type="password" placeholder="Create a strong password" />
+          </div>
+          <div class="field">
+            <label for="regAadhar">Aadhar number (12 digits)</label>
+            <input id="regAadhar" type="text" maxlength="14" placeholder="1234 1234 1234" />
+          </div>
+
+          <!-- MOBILE + OTP BLOCK -->
+          <div class="field">
+            <label for="regMobile">Mobile number (10 digits)</label>
+            <input id="regMobile" type="tel" maxlength="10" placeholder="9876543210" />
+            <div class="otp-row" style="margin-top:6px;">
+              <button id="regSendOtpBtn" type="button">Send mobile OTP</button>
+              <input id="regOtpInput" type="text" maxlength="6" placeholder="Enter OTP" />
+              <button id="regVerifyOtpBtn" type="button">Verify OTP</button>
+            </div>
+            <div id="regOtpInfo" class="info hidden"></div>
+            <div id="regOtpError" class="error hidden"></div>
+            <div id="regOtpSuccess" class="success hidden"></div>
+          </div>
+
+          <button id="registerBtn" class="btn primary" style="margin-top:10px;">Create account</button>
+          <div id="registerError" class="error hidden"></div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>Why verify mobile?</h2>
+        <p class="sub">
+          In a real system, OTP over SMS prevents fake accounts and ties one voter to one phone number. Here OTP is simulated on screen for learning.
+        </p>
+        <div class="info">
+          Flow:<br />
+          1. Enter mobile → Send OTP<br />
+          2. Check the simulated OTP text below the field<br />
+          3. Enter OTP → Verify OTP<br />
+          4. Register. If mobile or OTP changes, verification must be done again.
+        </div>
+        <p class="sub" style="margin-top:8px;">
+          After successful registration, you can login normally with email and password, or via Aadhar OTP.
+        </p>
+        <p class="sub" style="margin-top:6px;">
+          Already registered? <button id="registerToLogin" class="link" style="padding:0;">Go to Login</button>
+        </p>
+      </div>
+    </section>
+
+    <section id="aadharVerifyView" class="view">
+      <div class="panel">
+        <h2>Aadhar OTP login</h2>
+        <p class="sub">
+          Login using your Aadhar and registered mobile. OTP is generated and displayed on screen (for demo only).
+        </p>
+        <form onsubmit="return false;">
+          <div class="field">
+            <label for="aadharNumber">Aadhar number</label>
+            <input id="aadharNumber" type="text" maxlength="14" placeholder="1234 1234 1234" />
+          </div>
+          <div class="field">
+            <label for="aadharMobile">Registered mobile</label>
+            <input id="aadharMobile" type="tel" maxlength="10" placeholder="9876543210" />
+          </div>
+          <button id="requestOtpBtn" class="btn primary" type="button" style="margin-top:8px;">Send OTP</button>
+          <div id="aadharError" class="error hidden"></div>
+
+          <div id="otpSection" class="hidden" style="margin-top:10px;">
+            <div id="otpInfo" class="info"></div>
+            <div class="otp-row" style="margin-top:6px;">
+              <input id="otpInput" type="text" maxlength="6" placeholder="Enter OTP" />
+              <button id="verifyOtpBtn" type="button">Verify OTP</button>
+              <button id="resendOtpBtn" type="button">Resend</button>
+            </div>
+            <div id="otpError" class="error hidden"></div>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>About this flow</h2>
+        <p class="sub">
+          Backend and SMS gateway are not connected. OTP is displayed directly on the page so you can test the login sequence without any server.
+        </p>
+      </div>
+    </section>
+
+    <section id="dashboardView" class="view">
+      <div class="panel">
+        <h2>Voter dashboard</h2>
+        <p class="sub">
+          Welcome, <strong id="dashName">—</strong>. Review your profile and cast your vote. Each user can vote only once.
+        </p>
+        <div class="profile-grid">
+          <div class="profile-card">
+            <h3>Profile</h3>
+            <div class="profile-row">
+              <span class="label">Aadhar</span>
+              <span id="dashAadhar">—</span>
+            </div>
+            <div class="profile-row">
+              <span class="label">Mobile</span>
+              <span id="dashMobile">—</span>
+            </div>
+            <div class="profile-row">
+              <span class="label">Email</span>
+              <span id="dashEmail">—</span>
+            </div>
+            <div class="profile-row" style="margin-top:4px;">
+              <span id="dashVoted" style="font-size:13px; color:#a7f3d0;">Status: —</span>
+            </div>
+          </div>
+
+          <div>
+            <h3 style="font-size:14px; margin-bottom:4px;">Candidates</h3>
+            <p class="sub">
+              Choose your preferred candidate below. After casting your vote, buttons will be disabled for this account.
+            </p>
+            <div id="candidatesList" class="candidate-list"></div>
+            <div id="voteMsg" class="success hidden"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Disclaimer</h2>
+        <p class="sub">
+          This is a static front-end demo. Do not use it for real elections. To make it production-ready, connect to a secure backend, database, and real SMS gateway with rate-limiting and auditing.
+        </p>
+      </div>
+    </section>
+
+    <section id="infoView" class="view">
+      <div class="panel">
+        <h2>Project notes</h2>
+        <p class="sub">
+          This single page merges login, register with mobile OTP, Aadhar OTP login, dashboard, and voting. All logic is client-only, following the same idea as your merged static demo.
+        </p>
+      </div>
+      <div class="panel">
+        <h2>Next steps</h2>
+        <p class="sub">
+          You can now replace the simulated OTP parts with real SMS APIs (like Twilio or an Indian SMS gateway) and move the state into a backend server and database.
+        </p>
+      </div>
+    </section>
+  </main>
 
   <script>
-    // ========== APP STATE ==========
+    // ---------- State ----------
     const appState = {
-      users: [{
-        id: 1, name: 'Rajesh Kumar', email: 'rajesh@example.com',
-        password: 'password', aadhar: '123412341234', mobile: '8074392095',
-        hasVoted: false, verified: true
-      }],
+      users: [
+        {
+          id: 1,
+          name: "Rajesh Kumar",
+          email: "rajesh@example.com",
+          password: "password",
+          aadhar: "123412341234",
+          mobile: "9876543210",
+          hasVoted: false
+        }
+      ],
       currentUser: null,
-      currentOtp: null,
-      mobileVerified: false
+      pendingOtp: null,
+      regOtp: null,
+      candidates: [
+        { id: 1, name: "Ramesh Kumar Rao", party: "Progress Alliance", symbol: "⭐" },
+        { id: 2, name: "Meera Chopra", party: "Unity Front", symbol: "🤝" },
+        { id: 3, name: "Sanjay Gupta", party: "Future Vision", symbol: "🚀" }
+      ]
     };
 
-    // ========== HELPERS ==========
-    const qs = id => document.getElementById(id);
-    const showAlert = (el, msg, type = 'error') => {
+    // ---------- Helpers ----------
+    function qs(id) { return document.getElementById(id); }
+    function showView(id) {
+      qs("homeView").style.display = id === "homeView" ? "block" : "none";
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      if (id !== "homeView") qs(id).classList.add("active");
+
+      document.querySelectorAll("nav button.link").forEach(btn => btn.classList.remove("active"));
+      if (id === "homeView") qs("navHome").classList.add("active");
+      if (id === "infoView") qs("navInfo").classList.add("active");
+      renderNav();
+    }
+    function cleanupNumber(s) { return s ? s.replace(/\s/g, "") : ""; }
+    function validAadhar(a) { return /^\d{12}$/.test(cleanupNumber(a)); }
+    function validMobile(m) { return /^[6-9]\d{9}$/.test(m); }
+    function genOtp() { return Math.floor(100000 + Math.random() * 900000).toString(); }
+    function nowMs() { return Date.now(); }
+
+    function setVisible(el, visible, cls="hidden") {
       if (!el) return;
-      el.textContent = msg;
-      el.className = `alert ${type}`;
-      if (msg) el.classList.remove('hidden');
-      else el.classList.add('hidden');
-    };
-    
-    const showTab = id => {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      qs(id)?.classList.add('active');
-      document.querySelector(`[data-tab="${id}"]`)?.classList.add('active');
-    };
-
-    // ========== OTP GENERATOR (SIMULATED SMS) ==========
-    function generateOtp() {
-      return Math.floor(100000 + Math.random() * 900000).toString();
+      if (visible) el.classList.remove(cls);
+      else el.classList.add(cls);
     }
 
-    // ========== QUICK TEST ==========
-    qs('quickSend').onclick = () => {
-      const mobile = qs('quickMobile').value.trim();
-      if (!/^[6-9]\d{9}$/.test(mobile)) {
-        return showAlert(qs('quickMsg'), 'Enter valid 10-digit mobile', 'alert-error');
+    // ---------- Navigation ----------
+    function renderNav() {
+      const navRight = qs("navRight");
+      navRight.innerHTML = "";
+      if (appState.currentUser) {
+        const span = document.createElement("span");
+        span.textContent = appState.currentUser.name;
+        navRight.appendChild(span);
+
+        const dash = document.createElement("button");
+        dash.className = "link";
+        dash.textContent = "Dashboard";
+        dash.onclick = () => { showView("dashboardView"); renderDashboard(); };
+        navRight.appendChild(dash);
+
+        const out = document.createElement("button");
+        out.className = "link";
+        out.textContent = "Logout";
+        out.onclick = () => {
+          appState.currentUser = null;
+          showView("homeView");
+        };
+        navRight.appendChild(out);
+      } else {
+        const l = document.createElement("button");
+        l.className = "link";
+        l.textContent = "Login";
+        l.onclick = () => showView("loginView");
+
+        const r = document.createElement("button");
+        r.className = "link";
+        r.textContent = "Register";
+        r.onclick = () => showView("registerView");
+
+        navRight.appendChild(l);
+        navRight.appendChild(r);
       }
-      
-      const otp = generateOtp();
-      appState.currentOtp = otp;
-      showAlert(qs('quickMsg'), `✅ OTP Generated for ${mobile}!`, 'alert-success');
-      qs('quickOtp').textContent = `📱 SMS to ${mobile.slice(0,3)}****${mobile.slice(-1)}: ${otp}`;
-      qs('quickOtp').classList.remove('hidden');
-    };
+      if (qs("statUsers")) qs("statUsers").textContent = appState.users.length;
+      if (qs("statCandidates")) qs("statCandidates").textContent = appState.candidates.length;
+    }
 
-    // ========== REGISTER OTP ==========
-    qs('sendOtpBtn').onclick = () => {
-      const mobile = qs('regMobile').value.trim();
-      if (!/^[6-9]\d{9}$/.test(mobile)) {
-        return showAlert(qs('regMsg'), 'Enter valid 10-digit mobile', 'alert-error');
-      }
-      
-      const otp = generateOtp();
-      appState.currentOtp = otp;
-      qs('verifyOtpBtn').disabled = false;
-      
-      showAlert(qs('regMsg'), `✅ OTP sent to ${mobile.slice(0,3)}****${mobile.slice(-1)}`, 'alert-success');
-      qs('otpDisplay').textContent = `📱 Your OTP: ${otp}`;
-      qs('otpDisplay').classList.remove('hidden');
-    };
+    qs("navHome").onclick = () => showView("homeView");
+    qs("navInfo").onclick = () => showView("infoView");
+    qs("goLogin").onclick = () => showView("loginView");
+    qs("goRegister").onclick = () => showView("registerView");
+    qs("goAadharVerify").onclick = () => showView("aadharVerifyView");
 
-    qs('verifyOtpBtn').onclick = () => {
-      const code = qs('otpInput').value.trim();
-      if (code !== appState.currentOtp) {
-        return showAlert(qs('regMsg'), '❌ Invalid OTP', 'alert-error');
-      }
-      
-      appState.mobileVerified = true;
-      qs('submitBtn').disabled = false;
-      showAlert(qs('regMsg'), '✅ Mobile Verified Successfully!', 'alert-success');
-    };
-
-    // ========== REGISTER ==========
-    qs('registerForm').onsubmit = e => {
-      e.preventDefault();
-      if (!appState.mobileVerified) {
-        return showAlert(qs('regMsg'), 'Please verify mobile first', 'alert-error');
-      }
-
-      const userData = {
-        id: Date.now(),
-        name: qs('regName').value.trim(),
-        email: qs('regEmail').value.trim().toLowerCase(),
-        password: qs('regPassword').value,
-        aadhar: qs('regAadhar').value.replace(/\s/g, ''),
-        mobile: qs('regMobile').value.trim(),
-        hasVoted: false,
-        verified: true
-      };
-
-      appState.users.push(userData);
-      appState.currentUser = userData;
-      
-      showAlert(qs('regMsg'), `✅ Welcome ${userData.name}! Registration Complete.`, 'alert-success');
-      qs('registerForm').reset();
-      qs('submitBtn').disabled = true;
-      appState.mobileVerified = false;
-      
-      setTimeout(() => {
-        showTab('dashboard');
-        renderDashboard();
-      }, 1500);
-    };
-
-    // ========== LOGIN ==========
-    qs('loginForm').onsubmit = e => {
-      e.preventDefault();
-      const email = qs('loginEmail').value.trim().toLowerCase();
-      const password = qs('loginPassword').value;
-      
-      const user = appState.users.find(u => u.email === email && u.password === password);
+    // ---------- Login ----------
+    qs("loginBtn").onclick = () => {
+      const email = qs("loginEmail").value.trim().toLowerCase();
+      const pw = qs("loginPassword").value;
+      const user = appState.users.find(u => u.email === email && u.password === pw);
       if (!user) {
-        return showAlert(qs('loginMsg'), 'Invalid credentials', 'alert-error');
+        qs("loginError").textContent = "Invalid email or password.";
+        setVisible(qs("loginError"), true);
+        return;
       }
-      
+      setVisible(qs("loginError"), false);
       appState.currentUser = user;
-      showAlert(qs('loginMsg'), `Welcome ${user.name}!`, 'alert-success');
-      setTimeout(() => {
-        showTab('dashboard');
-        renderDashboard();
-      }, 800);
+      showView("dashboardView");
+      renderDashboard();
+    };
+    qs("loginToRegister").onclick = () => showView("registerView");
+
+    // ---------- Registration mobile OTP ----------
+    function resetRegOtpMessages() {
+      setVisible(qs("regOtpInfo"), false);
+      setVisible(qs("regOtpError"), false);
+      setVisible(qs("regOtpSuccess"), false);
+      qs("regOtpInfo").textContent = "";
+      qs("regOtpError").textContent = "";
+      qs("regOtpSuccess").textContent = "";
+    }
+
+    qs("regSendOtpBtn").onclick = () => {
+      resetRegOtpMessages();
+      const mobile = qs("regMobile").value.trim();
+      if (!validMobile(mobile)) {
+        qs("regOtpError").textContent = "Enter a valid 10-digit mobile number starting with 6–9.";
+        setVisible(qs("regOtpError"), true);
+        return;
+      }
+      const otp = genOtp();
+      appState.regOtp = {
+        mobile,
+        otp,
+        verified: false,
+        expiresAt: nowMs() + 5 * 60 * 1000,
+        attempts: 0
+      };
+      qs("regOtpInfo").textContent =
+        "OTP sent to " +
+        mobile.slice(0, 3) +
+        "****" +
+        mobile.slice(-1) +
+        " (simulated). OTP: " +
+        otp +
+        " (for testing only).";
+      setVisible(qs("regOtpInfo"), true);
+      qs("regOtpInput").value = "";
     };
 
-    // ========== DASHBOARD ==========
+    qs("regVerifyOtpBtn").onclick = () => {
+      resetRegOtpMessages();
+      if (!appState.regOtp) {
+        qs("regOtpError").textContent = "Please send OTP first.";
+        setVisible(qs("regOtpError"), true);
+        return;
+      }
+      const mobile = qs("regMobile").value.trim();
+      if (mobile !== appState.regOtp.mobile) {
+        qs("regOtpError").textContent = "Mobile number changed. Please request a new OTP.";
+        setVisible(qs("regOtpError"), true);
+        appState.regOtp = null;
+        return;
+      }
+      if (nowMs() > appState.regOtp.expiresAt) {
+        qs("regOtpError").textContent = "OTP expired. Please request a new one.";
+        setVisible(qs("regOtpError"), true);
+        appState.regOtp = null;
+        return;
+      }
+      const entered = qs("regOtpInput").value.trim();
+      if (entered !== appState.regOtp.otp) {
+        appState.regOtp.attempts++;
+        qs("regOtpError").textContent = "Invalid OTP. Attempts: " + appState.regOtp.attempts;
+        setVisible(qs("regOtpError"), true);
+        return;
+      }
+      appState.regOtp.verified = true;
+      qs("regOtpSuccess").textContent = "Mobile number verified successfully for registration.";
+      setVisible(qs("regOtpSuccess"), true);
+    };
+
+    // ---------- Register flow ----------
+    qs("registerBtn").onclick = () => {
+      const name = qs("regName").value.trim();
+      const email = qs("regEmail").value.trim().toLowerCase();
+      const pw = qs("regPassword").value;
+      const aadhar = cleanupNumber(qs("regAadhar").value);
+      const mobile = qs("regMobile").value.trim();
+
+      setVisible(qs("registerError"), false);
+      const err = qs("registerError");
+
+      if (!name || !email || !pw) {
+        err.textContent = "Name, email and password are required.";
+        setVisible(err, true);
+        return;
+      }
+      if (!validAadhar(aadhar)) {
+        err.textContent = "Aadhar must be exactly 12 digits.";
+        setVisible(err, true);
+        return;
+      }
+      if (!validMobile(mobile)) {
+        err.textContent = "Enter a valid 10-digit mobile number.";
+        setVisible(err, true);
+        return;
+      }
+      if (!appState.regOtp || !appState.regOtp.verified || appState.regOtp.mobile !== mobile) {
+        err.textContent = "Please verify your mobile number via OTP before registering.";
+        setVisible(err, true);
+        return;
+      }
+      if (appState.users.find(u => u.email === email)) {
+        err.textContent = "Email is already registered.";
+        setVisible(err, true);
+        return;
+      }
+      if (appState.users.find(u => u.aadhar === aadhar)) {
+        err.textContent = "Aadhar is already registered.";
+        setVisible(err, true);
+        return;
+      }
+      if (appState.users.find(u => u.mobile === mobile)) {
+        err.textContent = "Mobile is already registered.";
+        setVisible(err, true);
+        return;
+      }
+
+      const id = appState.users.length ? Math.max(...appState.users.map(u => u.id)) + 1 : 1;
+      const user = { id, name, email, password: pw, aadhar, mobile, hasVoted: false };
+      appState.users.push(user);
+      appState.regOtp = null;
+      resetRegOtpMessages();
+
+      err.textContent = "Account created successfully. Please login.";
+      err.style.background = "rgba(22, 163, 74, 0.3)";
+      err.style.borderColor = "rgba(22, 163, 74, 0.8)";
+      err.style.color = "#bbf7d0";
+      setVisible(err, true);
+
+      qs("regName").value = "";
+      qs("regEmail").value = "";
+      qs("regPassword").value = "";
+      qs("regAadhar").value = "";
+      qs("regMobile").value = "";
+      qs("regOtpInput").value = "";
+
+      setTimeout(() => {
+        err.style.background = "rgba(127, 29, 29, 0.4)";
+        err.style.borderColor = "rgba(248, 113, 113, 0.5)";
+        err.style.color = "#fecaca";
+        setVisible(err, false);
+        showView("loginView");
+      }, 1000);
+    };
+
+    qs("registerToLogin").onclick = () => showView("loginView");
+
+    // ---------- Aadhar OTP login ----------
+    qs("requestOtpBtn").onclick = () => {
+      const aadhar = cleanupNumber(qs("aadharNumber").value);
+      const mobile = qs("aadharMobile").value.trim();
+      if (!validAadhar(aadhar)) {
+        qs("aadharError").textContent = "Enter a valid 12-digit Aadhar.";
+        setVisible(qs("aadharError"), true);
+        return;
+      }
+      if (!validMobile(mobile)) {
+        qs("aadharError").textContent = "Enter a valid 10-digit mobile.";
+        setVisible(qs("aadharError"), true);
+        return;
+      }
+      const user = appState.users.find(u => u.aadhar === aadhar && u.mobile === mobile);
+      if (!user) {
+        qs("aadharError").textContent = "No registered user with that Aadhar + mobile. Please register first.";
+        setVisible(qs("aadharError"), true);
+        return;
+      }
+      setVisible(qs("aadharError"), false);
+
+      const otp = genOtp();
+      appState.pendingOtp = {
+        aadhar,
+        mobile,
+        otp,
+        expiresAt: nowMs() + 5 * 60 * 1000,
+        attempts: 0
+      };
+      setVisible(qs("otpSection"), true);
+      qs("otpInfo").textContent =
+        "OTP sent to " +
+        mobile.slice(0, 3) +
+        "****" +
+        mobile.slice(-1) +
+        " (simulated). OTP: " +
+        otp +
+        " (for testing only).";
+      qs("otpInput").value = "";
+      setVisible(qs("otpError"), false);
+    };
+
+    qs("resendOtpBtn").onclick = () => {
+      if (!appState.pendingOtp) {
+        qs("otpError").textContent = "No OTP requested yet.";
+        setVisible(qs("otpError"), true);
+        return;
+      }
+      if (nowMs() > appState.pendingOtp.expiresAt) {
+        qs("otpError").textContent = "Previous OTP expired. Request a new one.";
+        setVisible(qs("otpError"), true);
+        return;
+      }
+      appState.pendingOtp.otp = genOtp();
+      qs("otpInfo").textContent =
+        "Resent OTP (simulated): " + appState.pendingOtp.otp + " (for testing only).";
+      setVisible(qs("otpError"), false);
+    };
+
+    qs("verifyOtpBtn").onclick = () => {
+      if (!appState.pendingOtp) {
+        qs("otpError").textContent = "No OTP requested.";
+        setVisible(qs("otpError"), true);
+        return;
+      }
+      const entered = qs("otpInput").value.trim();
+      if (nowMs() > appState.pendingOtp.expiresAt) {
+        qs("otpError").textContent = "OTP expired. Request a new one.";
+        setVisible(qs("otpError"), true);
+        return;
+      }
+      if (entered !== appState.pendingOtp.otp) {
+        appState.pendingOtp.attempts++;
+        qs("otpError").textContent =
+          "Invalid OTP. Attempts: " + appState.pendingOtp.attempts;
+        setVisible(qs("otpError"), true);
+        return;
+      }
+
+      const user = appState.users.find(u => u.aadhar === appState.pendingOtp.aadhar);
+      if (!user) {
+        qs("otpError").textContent = "User no longer exists.";
+        setVisible(qs("otpError"), true);
+        return;
+      }
+      appState.currentUser = user;
+      appState.pendingOtp = null;
+      setVisible(qs("otpSection"), false);
+      qs("aadharNumber").value = "";
+      qs("aadharMobile").value = "";
+      showView("dashboardView");
+      renderDashboard();
+    };
+
+    // ---------- Dashboard & voting ----------
     function renderDashboard() {
       if (!appState.currentUser) return;
-      const user = appState.currentUser;
-      
-      qs('dashName').textContent = user.name;
-      qs('dashEmail').textContent = user.email;
-      qs('dashMobile').textContent = user.mobile;
-      qs('dashStatus').textContent = user.hasVoted ? '✅ VOTED' : 'Ready to Vote';
-      
-      document.querySelectorAll('.vote-btn').forEach(btn => {
-        btn.onclick = () => castVote(btn.closest('.candidate').dataset.candidate);
-        btn.disabled = user.hasVoted;
-        btn.textContent = user.hasVoted ? 'Voted ✅' : 'Vote Now';
+      const u = appState.currentUser;
+      qs("dashName").textContent = u.name || "—";
+      qs("dashAadhar").textContent = u.aadhar
+        ? u.aadhar.replace(/(\d{4})(\d{4})(\d{4})/, "$1 $2 $3")
+        : "—";
+      qs("dashMobile").textContent = u.mobile || "—";
+      qs("dashEmail").textContent = u.email || "—";
+      qs("dashVoted").textContent = u.hasVoted ? "Status: VOTED ✅" : "Status: NOT VOTED";
+      const list = qs("candidatesList");
+      list.innerHTML = "";
+      appState.candidates.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "candidate";
+        div.innerHTML = `
+          <header>
+            <h3>${c.name}</h3>
+            <span class="candidate-symbol">${c.symbol}</span>
+          </header>
+          <p>${c.party}</p>
+        `;
+        const btn = document.createElement("button");
+        btn.textContent = u.hasVoted ? "Vote cast" : "Vote";
+        btn.disabled = u.hasVoted;
+        btn.onclick = () => castVote(c.id);
+        div.appendChild(btn);
+        list.appendChild(div);
       });
+      setVisible(qs("voteMsg"), false);
     }
 
     function castVote(candidateId) {
-      if (appState.currentUser?.hasVoted) return;
+      if (!appState.currentUser) return;
+      if (appState.currentUser.hasVoted) return;
       appState.currentUser.hasVoted = true;
-      
-      showAlert(qs('voteMsg'), `✅ Your vote for Candidate #${candidateId} is recorded!`, 'alert-success');
-      qs('voteMsg').classList.remove('hidden');
       renderDashboard();
+      qs("voteMsg").textContent =
+        "Your vote has been recorded. You cannot vote again with this account.";
+      setVisible(qs("voteMsg"), true);
     }
-
-    qs('logoutBtn').onclick = () => {
-      appState.currentUser = null;
-      showTab('home');
-    };
-
-    // ========== INIT ==========
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.onclick = () => showTab(tab.dataset.tab);
-      });
-      showTab('home');
-    });
+    
+// ---------- Init ----------
+    showView("homeView");
+    renderNav();
   </script>
 </body>
 </html>
+
